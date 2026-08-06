@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.RegisterRequest;
 import com.example.demo.entity.User;
 import com.example.demo.exception.ConflictException;
@@ -12,10 +13,12 @@ public class UserService {
 
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public void register(RegisterRequest request) {
@@ -30,5 +33,17 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         repository.save(user);
+    }
+
+    public String login(LoginRequest request) {
+
+        User user = repository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Неверный email или пароль"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Неверный email или пароль");
+        }
+
+        return jwtService.generateToken(user);
     }
 }
