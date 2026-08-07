@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -12,11 +13,11 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    private final String secret =
-            "jwt-test-token-with-random-symbols-34558126752";
+    private final SecretKey key;
 
-    private final SecretKey key =
-            Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    public JwtService(@Value("${jwt.secret}") String secret) {
+        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
 
     public String generateToken(User user) {
         return Jwts.builder()
