@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.*;
+import com.example.demo.entity.RefreshToken;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.exception.ConflictException;
@@ -16,11 +17,13 @@ public class UserService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepository repository, PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public void register(RegisterRequest request) {
@@ -38,7 +41,7 @@ public class UserService {
         repository.save(user);
     }
 
-    public String login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request) {
 
         User user = repository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Неверный email или пароль"));
@@ -47,11 +50,13 @@ public class UserService {
             throw new InvalidCredentialsException("Неверный email или пароль");
         }
 
-        return jwtService.generateToken(user);
+        String accessToken = jwtService.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.create(user);
+
+        return new LoginResponse(accessToken, refreshToken.getToken());
     }
 
     public UserResponse getCurrentUser(Long userId) {
-
         User user = repository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден"));
 
@@ -73,7 +78,6 @@ public class UserService {
                         "Пользователь с таким email уже существует"
                 );
             }
-
             user.setEmail(request.getEmail());
         }
         repository.save(user);
