@@ -43,7 +43,8 @@ public class UserService {
 
     public LoginResponse login(LoginRequest request) {
 
-        User user = repository.findByEmail(request.getEmail())
+        User user = repository
+                .findByEmail(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Неверный email или пароль"));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
