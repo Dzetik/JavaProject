@@ -23,7 +23,10 @@ public class RefreshTokenService {
         this.jwtService = jwtService;
     }
 
+    @Transactional
     public RefreshToken create(User user) {
+        repository.deleteByUser(user);
+
         RefreshToken refreshToken = new RefreshToken();
         byte[] bytes = new byte[64];
         secureRandom.nextBytes(bytes);

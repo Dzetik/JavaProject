@@ -27,7 +27,6 @@ public class UserService {
     }
 
     public void register(RegisterRequest request) {
-
         if (repository.existsByEmail(request.getEmail())) {
             throw new ConflictException("Пользователь с таким email уже существует");
         }
@@ -42,7 +41,6 @@ public class UserService {
     }
 
     public LoginResponse login(LoginRequest request) {
-
         User user = repository
                 .findByEmail(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Неверный email или пароль"));
