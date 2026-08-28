@@ -1,8 +1,9 @@
 package com.example.demo.config;
 
-import com.example.demo.security.WebSocketAuthInterceptor;
+import com.example.demo.security.WebSocketJwtChannelInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -11,15 +12,18 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+public class WebSocketConfig
+        implements WebSocketMessageBrokerConfigurer {
 
-    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+    private final WebSocketJwtChannelInterceptor
+            webSocketJwtChannelInterceptor;
 
     @Override
     public void configureMessageBroker(
             MessageBrokerRegistry registry
     ) {
         registry.enableSimpleBroker("/topic");
+
         registry.setApplicationDestinationPrefixes("/app");
     }
 
@@ -28,7 +32,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             StompEndpointRegistry registry
     ) {
         registry.addEndpoint("/ws")
-                .addInterceptors(webSocketAuthInterceptor)
-                .setAllowedOriginPatterns("*");
+                .setAllowedOrigins("http://localhost:5500");
+    }
+
+    @Override
+    public void configureClientInboundChannel(
+            ChannelRegistration registration
+    ) {
+        registration.interceptors(
+                webSocketJwtChannelInterceptor
+        );
     }
 }
