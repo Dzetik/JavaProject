@@ -19,6 +19,7 @@ public class JwtService {
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
+    // генерирует новый JWT для переданного пользователя
     public String generateToken(User user) {
         return Jwts.builder()
                 .subject(user.getId().toString())
@@ -28,6 +29,7 @@ public class JwtService {
                 .compact();
     }
 
+    // извлекает из токена идентификатор пользователя
     public Long extractUserId(String token) {
         String subject = Jwts.parser()
                 .verifyWith(key)
@@ -39,6 +41,17 @@ public class JwtService {
         return Long.valueOf(subject);
     }
 
+    // извлекает из токена дату и время истечения срока действия
+    public Date extractExpiration(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getExpiration();
+    }
+
+    // проверяет общую валидность токена
     public boolean isValid(String token) {
         try {
             Jwts.parser()
@@ -47,7 +60,8 @@ public class JwtService {
                     .parseSignedClaims(token);
 
             return true;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return false;
         }
     }
