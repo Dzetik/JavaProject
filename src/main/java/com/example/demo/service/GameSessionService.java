@@ -13,14 +13,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class GameSessionService {
-    private final GameSessionRepository gameSessionRepository;
+    private final GameSessionAccessService gameSessionAccessService;
 
     @Transactional(readOnly = true)
-    public GameSessionResponse getGameSessionById(Long gameSessionId) {
-        GameSession gameSession = gameSessionRepository.findById(gameSessionId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Игровая сессия с id " + gameSessionId + " не найдена"));
-
+    public GameSessionResponse getGameSessionById(Long gameSessionId, Long userId) {
+        GameSession gameSession = gameSessionAccessService.getGameSessionForPlayer(gameSessionId, userId);
         return toResponse(gameSession);
     }
 

@@ -1,5 +1,6 @@
 package com.example.demo.config;
 
+import com.example.demo.security.GameSubscriptionInterceptor;
 import com.example.demo.security.WebSocketJwtChannelInterceptor;
 import com.example.demo.security.WebSocketSessionHandlerDecoratorFactory;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.socket.config.annotation.*;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketJwtChannelInterceptor webSocketJwtChannelInterceptor;
     private final WebSocketSessionHandlerDecoratorFactory webSocketSessionHandlerDecoratorFactory;
+    private final GameSubscriptionInterceptor gameSubscriptionInterceptor;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -29,7 +31,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(webSocketJwtChannelInterceptor);
+        registration.interceptors(webSocketJwtChannelInterceptor, gameSubscriptionInterceptor);
     }
 
     @Override

@@ -19,36 +19,50 @@ public class WebSocketSessionService {
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
     // хранилище ссылок на запланированные задачи на очистку для согласованности при отключении сессии раньше срока
     private final Map<String, ScheduledFuture<?>> expirationTasks = new ConcurrentHashMap<>();
+    // JWT expiration, полученный во время STOMP CONNECT,до момента появления физической WebSocket-сессии.
+    private final Map<String, Date> pendingExpirations = new ConcurrentHashMap<>();
 
     public WebSocketSessionService(@Qualifier("jwtExpirationTaskScheduler") TaskScheduler taskScheduler) {
         this.taskScheduler = taskScheduler;
     }
 
     public void addSession(WebSocketSession session) {
-        sessions.put(session.getId(), session);
-        System.out.println("WebSocket session opened: " + session.getId());
+        String sessionId = session.getId();
+        sessions.put(sessionId, session);
+
+        Date expiration = pendingExpirations.remove(sessionId);
+        if (expiration != null) {
+            registerExpirationTask(sessionId, expiration);
+        }
+
+        System.out.println("WebSocket session opened: " + sessionId);
     }
 
     public void registerSession(String sessionId, Date expiration) {
         WebSocketSession session = sessions.get(sessionId);
 
         if (session == null) {
-            System.out.println("WebSocket session not found: " + sessionId);
+            pendingExpirations.put(sessionId, expiration);
+
+            System.out.println("WebSocket session is not established yet: " + sessionId);
             return;
         }
 
+        registerExpirationTask(sessionId, expiration);
+    }
+
+    private void registerExpirationTask(String sessionId, Date expiration) {
         long delay = expiration.getTime() - System.currentTimeMillis();
         if (delay <= 0) {
             closeSession(sessionId);
             return;
         }
 
-        // составляет задачу и записывает её выполнение на указанное время, добавляет в хранилище задач
-        ScheduledFuture<?> future =
-                taskScheduler.schedule(
+        ScheduledFuture<?> future = taskScheduler.schedule(
                         () -> closeSession(sessionId),
                         expiration.toInstant()
                 );
+
         expirationTasks.put(sessionId, future);
 
         System.out.println("WebSocket session registered: " + sessionId + ", expires at: " + expiration);
@@ -56,8 +70,9 @@ public class WebSocketSessionService {
 
     public void removeSession(String sessionId) {
         sessions.remove(sessionId);
-
+        pendingExpirations.remove(sessionId);
         ScheduledFuture<?> future = expirationTasks.remove(sessionId);
+
         if (future != null) {
             future.cancel(false);
         }
@@ -66,8 +81,10 @@ public class WebSocketSessionService {
     }
 
     private void closeSession(String sessionId) {
+        pendingExpirations.remove(sessionId);
         WebSocketSession session = sessions.remove(sessionId);
         ScheduledFuture<?> future = expirationTasks.remove(sessionId);
+
         if (future != null) {
             future.cancel(false);
         }

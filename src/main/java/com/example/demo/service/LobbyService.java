@@ -4,6 +4,7 @@ import com.example.demo.dto.CreateLobbyRequest;
 import com.example.demo.dto.LobbyPlayerResponse;
 import com.example.demo.dto.LobbyResponse;
 import com.example.demo.entity.*;
+import com.example.demo.event.GameUpdatedEvent;
 import com.example.demo.event.LobbyUpdatedEvent;
 import com.example.demo.exception.*;
 import com.example.demo.repository.GameSessionRepository;
@@ -29,6 +30,10 @@ public class LobbyService {
     @Transactional
     public LobbyResponse createLobby(CreateLobbyRequest request, Long userId) {
         User owner = getUserById(userId);
+        if (!lobbyRepository.findByPlayerId(userId).isEmpty()) {
+            throw new ConflictException("Пользователь уже находится в лобби");
+        }
+
         Lobby lobby = new Lobby(request.getName(), owner, request.getMaxPlayers());
 
         Lobby savedLobby = lobbyRepository.save(lobby);
@@ -182,7 +187,14 @@ public class LobbyService {
         gameSession.setStatus(GameSessionStatus.ACTIVE);
         gameSession.setStartedAt(LocalDateTime.now());
 
-        gameSessionRepository.save(gameSession);
+        GameSession savedGameSession = gameSessionRepository.save(gameSession);
+        eventPublisher.publishEvent(
+                new GameUpdatedEvent(
+                        "GAME_STARTED",
+                        savedGameSession.getId(),
+                        null
+                )
+        );
 
         lobby.setStatus(LobbyStatus.STARTED);
         Lobby savedLobby = lobbyRepository.save(lobby);

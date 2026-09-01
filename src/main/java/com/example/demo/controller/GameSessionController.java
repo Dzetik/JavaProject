@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,11 +27,15 @@ public class GameSessionController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Игровая сессия найдена"),
             @ApiResponse(responseCode = "401", description = "Требуется авторизация"),
+            @ApiResponse(responseCode = "403", description = "Пользователь не является участником игры"),
             @ApiResponse(responseCode = "404", description = "Игровая сессия не найдена")
     })
     public ResponseEntity<GameSessionResponse> getGameSession(
             @Parameter(description = "ID игровой сессии", example = "1")
-            @PathVariable Long id) {
-        return ResponseEntity.ok(gameSessionService.getGameSessionById(id));
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(gameSessionService.getGameSessionById(id, userId));
     }
 }

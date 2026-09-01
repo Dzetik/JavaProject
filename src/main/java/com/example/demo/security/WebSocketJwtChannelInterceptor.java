@@ -46,6 +46,9 @@ public class WebSocketJwtChannelInterceptor implements ChannelInterceptor {
 
             accessor.setUser(authentication);
 
+            // Сохранение Authentication в attributes STOMP-сессии
+            accessor.getSessionAttributes().put("USER_AUTHENTICATION", authentication);
+
             String sessionId = accessor.getSessionId();
             webSocketSessionService.registerSession(sessionId, jwtService.extractExpiration(token));
         }
