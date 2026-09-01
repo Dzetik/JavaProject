@@ -3,11 +3,10 @@ package com.example.demo.service;
 import com.example.demo.dto.CreateLobbyRequest;
 import com.example.demo.dto.LobbyPlayerResponse;
 import com.example.demo.dto.LobbyResponse;
-import com.example.demo.entity.Lobby;
-import com.example.demo.entity.LobbyStatus;
-import com.example.demo.entity.User;
+import com.example.demo.entity.*;
 import com.example.demo.event.LobbyUpdatedEvent;
 import com.example.demo.exception.*;
+import com.example.demo.repository.GameSessionRepository;
 import com.example.demo.repository.LobbyRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +14,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -23,6 +24,7 @@ public class LobbyService {
     private final LobbyRepository lobbyRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final GameSessionRepository gameSessionRepository;
 
     @Transactional
     public LobbyResponse createLobby(CreateLobbyRequest request, Long userId) {
@@ -158,7 +160,9 @@ public class LobbyService {
 
     @Transactional
     public LobbyResponse startGame(Long lobbyId, Long userId) {
-        Lobby lobby = getLobbyEntityById(lobbyId);
+        Lobby lobby = lobbyRepository.findByIdForUpdate(lobbyId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Лобби с id " + lobbyId + " не найдено"));
 
         if (!lobby.getOwner().getId().equals(userId)) {
             throw new ForbiddenException("Только владелец лобби может начать игру");
@@ -171,6 +175,14 @@ public class LobbyService {
         if (lobby.getPlayers().size() < 2) {
             throw new ConflictException("Для начала игры необходимо минимум 2 игрока");
         }
+
+        GameSession gameSession = new GameSession();
+        gameSession.setLobby(lobby);
+        gameSession.setPlayers(new ArrayList<>(lobby.getPlayers()));
+        gameSession.setStatus(GameSessionStatus.ACTIVE);
+        gameSession.setStartedAt(LocalDateTime.now());
+
+        gameSessionRepository.save(gameSession);
 
         lobby.setStatus(LobbyStatus.STARTED);
         Lobby savedLobby = lobbyRepository.save(lobby);
