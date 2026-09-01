@@ -9,24 +9,11 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class LobbyWebSocketService {
-
     private final SimpMessagingTemplate messagingTemplate;
 
-    public void sendEvent(
-            String type,
-            Long lobbyId,
-            LobbyResponse lobby
-    ) {
-        System.out.println(
-                "SENDING WEBSOCKET EVENT TO: /topic/lobbies/" + lobbyId
-        );
-
-        LobbyEventResponse event =
-                new LobbyEventResponse(type, lobby);
-
-        messagingTemplate.convertAndSend(
-                "/topic/lobbies/" + lobbyId,
-                event
-        );
+    public void sendEvent(String type, Long lobbyId, LobbyResponse lobby) {
+        System.out.println("SENDING WEBSOCKET EVENT TO: /topic/lobbies/" + lobbyId);
+        LobbyEventResponse event = new LobbyEventResponse(type, lobby);
+        messagingTemplate.convertAndSend("/topic/lobbies/" + lobbyId, event);
     }
 }

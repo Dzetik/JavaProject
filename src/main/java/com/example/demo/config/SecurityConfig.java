@@ -32,6 +32,9 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, ex) ->
+                                response.sendError(401, "Unauthorized")
+                        )
                         .accessDeniedHandler((request, response, ex) ->
                                 response.sendError(403, "Forbidden")
                         )

@@ -13,8 +13,11 @@ import java.util.concurrent.ScheduledFuture;
 
 @Service
 public class WebSocketSessionService {
+    // хранилище запланированных задач на очистку
     private final TaskScheduler taskScheduler;
+    // хранилище активных WebSocket-сессий
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
+    // хранилище ссылок на запланированные задачи на очистку для согласованности при отключении сессии раньше срока
     private final Map<String, ScheduledFuture<?>> expirationTasks = new ConcurrentHashMap<>();
 
     public WebSocketSessionService(@Qualifier("jwtExpirationTaskScheduler") TaskScheduler taskScheduler) {
@@ -40,13 +43,14 @@ public class WebSocketSessionService {
             return;
         }
 
+        // составляет задачу и записывает её выполнение на указанное время, добавляет в хранилище задач
         ScheduledFuture<?> future =
                 taskScheduler.schedule(
                         () -> closeSession(sessionId),
                         expiration.toInstant()
                 );
-
         expirationTasks.put(sessionId, future);
+
         System.out.println("WebSocket session registered: " + sessionId + ", expires at: " + expiration);
     }
 
@@ -63,7 +67,6 @@ public class WebSocketSessionService {
 
     private void closeSession(String sessionId) {
         WebSocketSession session = sessions.remove(sessionId);
-
         ScheduledFuture<?> future = expirationTasks.remove(sessionId);
         if (future != null) {
             future.cancel(false);
