@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.CreateLobbyRequest;
+import com.example.demo.dto.GameSessionResponse;
 import com.example.demo.dto.LobbyPlayerResponse;
 import com.example.demo.dto.LobbyResponse;
 import com.example.demo.entity.*;
@@ -26,6 +27,7 @@ public class LobbyService {
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final GameSessionRepository gameSessionRepository;
+    private final GameSessionService gameSessionService;
 
     @Transactional
     public LobbyResponse createLobby(CreateLobbyRequest request, Long userId) {
@@ -188,26 +190,21 @@ public class LobbyService {
         gameSession.setStartedAt(LocalDateTime.now());
 
         GameSession savedGameSession = gameSessionRepository.save(gameSession);
-        eventPublisher.publishEvent(
-                new GameUpdatedEvent(
-                        "GAME_STARTED",
-                        savedGameSession.getId(),
-                        null
-                )
-        );
 
         lobby.setStatus(LobbyStatus.STARTED);
         Lobby savedLobby = lobbyRepository.save(lobby);
 
-        LobbyResponse response = toLobbyResponse(savedLobby);
+        GameSessionResponse gameResponse = gameSessionService.toResponse(savedGameSession);
 
         eventPublisher.publishEvent(
-                new LobbyUpdatedEvent(
+                new GameUpdatedEvent(
                         "GAME_STARTED",
-                        savedLobby.getId(),
-                        response
+                        savedGameSession.getId(),
+                        gameResponse
                 )
         );
+
+        LobbyResponse response = toLobbyResponse(savedLobby);
 
         return response;
     }

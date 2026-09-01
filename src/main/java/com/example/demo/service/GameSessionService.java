@@ -21,7 +21,7 @@ public class GameSessionService {
         return toResponse(gameSession);
     }
 
-    private GameSessionResponse toResponse(GameSession gameSession) {
+    public GameSessionResponse toResponse(GameSession gameSession) {
         List<GameSessionPlayerResponse> players = gameSession.getPlayers()
                 .stream()
                 .map(player -> new GameSessionPlayerResponse(

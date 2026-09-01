@@ -43,7 +43,7 @@ public class GameSubscriptionInterceptor implements ChannelInterceptor {
 
         try {
         accessor.setUser(authentication);
-        
+
         Long gameId = extractGameId(destination);
         Long userId = (Long) authentication.getPrincipal();
 
