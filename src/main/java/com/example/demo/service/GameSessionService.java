@@ -3,9 +3,13 @@ package com.example.demo.service;
 import com.example.demo.dto.GameSessionPlayerResponse;
 import com.example.demo.dto.GameSessionResponse;
 import com.example.demo.entity.GameSession;
+import com.example.demo.entity.GameSessionStatus;
+import com.example.demo.event.GameUpdatedEvent;
+import com.example.demo.exception.ConflictException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.GameSessionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -14,11 +18,51 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GameSessionService {
     private final GameSessionAccessService gameSessionAccessService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public GameSessionResponse getGameSessionById(Long gameSessionId, Long userId) {
         GameSession gameSession = gameSessionAccessService.getGameSessionForPlayer(gameSessionId, userId);
         return toResponse(gameSession);
+    }
+
+    @Transactional
+    public GameSessionResponse updateStatus(Long gameSessionId, Long userId, GameSessionStatus status) {
+        GameSession gameSession = gameSessionAccessService.getGameSessionForPlayer(gameSessionId, userId);
+        gameSession.setStatus(status);
+        GameSessionResponse response = toResponse(gameSession);
+
+        eventPublisher.publishEvent(
+                new GameUpdatedEvent(
+                        "GAME_UPDATED",
+                        gameSession.getId(),
+                        response
+                )
+        );
+
+        return response;
+    }
+
+    @Transactional
+    public GameSessionResponse finishGame(Long gameSessionId, Long userId) {
+        GameSession gameSession = gameSessionAccessService.getGameSessionForPlayer(gameSessionId, userId);
+
+        if (gameSession.getStatus() == GameSessionStatus.FINISHED) {
+            throw new ConflictException("Игра уже завершена");
+        }
+
+        gameSession.setStatus(GameSessionStatus.FINISHED);
+        GameSessionResponse response = toResponse(gameSession);
+
+        eventPublisher.publishEvent(
+                new GameUpdatedEvent(
+                        "GAME_FINISHED",
+                        gameSession.getId(),
+                        response
+                )
+        );
+
+        return response;
     }
 
     public GameSessionResponse toResponse(GameSession gameSession) {
