@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.GameSessionResponse;
+import com.example.demo.dto.GameStateResponse;
 import com.example.demo.entity.GameSessionStatus;
 import com.example.demo.service.GameSessionService;
+import com.example.demo.service.GameStateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class GameSessionController {
     private final GameSessionService gameSessionService;
+    private final GameStateService gameStateService;
 
     @GetMapping("/{id}")
     @Operation(
@@ -38,6 +41,46 @@ public class GameSessionController {
 
         Long userId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(gameSessionService.getGameSessionById(id, userId));
+    }
+
+    @GetMapping("/{id}/state")
+    @Operation(
+            summary = "Получить состояние игры",
+            description = "Возвращает состояние игры только её участнику"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Состояние игры получено"),
+            @ApiResponse(responseCode = "401", description = "Требуется авторизация"),
+            @ApiResponse(responseCode = "403", description = "Пользователь не является участником игры"),
+            @ApiResponse(responseCode = "404", description = "Игра или её состояние не найдены")
+    })
+    public ResponseEntity<GameStateResponse> getGameState(
+            @Parameter(description = "ID игровой сессии", example = "1")
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(gameStateService.getState(id, userId));
+    }
+
+    @PatchMapping("/{id}/state")
+    @Operation(
+            summary = "Обновить состояние игры",
+            description = "Тестовое изменение GameState с отправкой GAME_STATE_UPDATED"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Состояние обновлено"),
+            @ApiResponse(responseCode = "401", description = "Требуется авторизация"),
+            @ApiResponse(responseCode = "403", description = "Пользователь не является участником игры"),
+            @ApiResponse(responseCode = "404", description = "Игра или её состояние не найдены"),
+            @ApiResponse(responseCode = "409", description = "Игра уже завершена")
+    })
+    public ResponseEntity<GameStateResponse> updateGameState(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(gameStateService.updateState(id, userId));
     }
 
     @PatchMapping("/{id}/status")

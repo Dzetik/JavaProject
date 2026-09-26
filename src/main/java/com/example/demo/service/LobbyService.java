@@ -28,6 +28,7 @@ public class LobbyService {
     private final ApplicationEventPublisher eventPublisher;
     private final GameSessionRepository gameSessionRepository;
     private final GameSessionService gameSessionService;
+    private final GameStateService gameStateService;
 
     @Transactional
     public LobbyResponse createLobby(CreateLobbyRequest request, Long userId) {
@@ -190,6 +191,8 @@ public class LobbyService {
         gameSession.setStartedAt(LocalDateTime.now());
 
         GameSession savedGameSession = gameSessionRepository.save(gameSession);
+
+        gameStateService.createInitialState(savedGameSession);
 
         lobby.setStatus(LobbyStatus.STARTED);
         Lobby savedLobby = lobbyRepository.save(lobby);
