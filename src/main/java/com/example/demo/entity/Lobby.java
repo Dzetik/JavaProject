@@ -35,6 +35,12 @@ public class Lobby {
     @Column(nullable = false)
     private Integer maxPlayers;
 
+    @Column(nullable = false)
+    private Integer initialTableCards = 4;
+
+    @Column(nullable = false)
+    private Integer initialHandCards = 4;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private LobbyStatus status = LobbyStatus.WAITING;

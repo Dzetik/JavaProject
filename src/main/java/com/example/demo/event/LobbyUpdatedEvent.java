@@ -1,6 +1,6 @@
 package com.example.demo.event;
 
-import com.example.demo.dto.LobbyResponse;
+import com.example.demo.dto.lobby.LobbyResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

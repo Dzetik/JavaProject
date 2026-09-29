@@ -1,6 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.*;
+import com.example.demo.dto.auth.LoginRequest;
+import com.example.demo.dto.auth.LoginResponse;
+import com.example.demo.dto.auth.RegisterRequest;
+import com.example.demo.dto.user.ChangePasswordRequest;
+import com.example.demo.dto.user.UpdateUserRequest;
+import com.example.demo.dto.user.UserResponse;
 import com.example.demo.entity.RefreshToken;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;

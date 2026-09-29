@@ -1,11 +1,11 @@
-package com.example.demo.dto;
+package com.example.demo.dto.lobby;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class GameSessionPlayerResponse {
+public class LobbyPlayerResponse {
     private Long id;
     private String name;
 }

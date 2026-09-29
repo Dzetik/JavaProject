@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.GameEventResponse;
+import com.example.demo.dto.game.GameEventResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;

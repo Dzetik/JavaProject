@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.LoginResponse;
+import com.example.demo.dto.auth.LoginResponse;
 import com.example.demo.entity.RefreshToken;
 import com.example.demo.entity.User;
 import com.example.demo.exception.InvalidCredentialsException;

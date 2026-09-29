@@ -1,6 +1,6 @@
 package com.example.demo.event;
 
-import com.example.demo.dto.GameSessionResponse;
+import com.example.demo.dto.game.GameSessionResponse;
 import com.example.demo.service.GameWebSocketService;
 import com.example.demo.service.LobbyWebSocketService;
 import lombok.RequiredArgsConstructor;

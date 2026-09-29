@@ -1,9 +1,9 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.LoginResponse;
-import com.example.demo.dto.RefreshTokenRequest;
-import com.example.demo.dto.RegisterRequest;
+import com.example.demo.dto.auth.LoginRequest;
+import com.example.demo.dto.auth.LoginResponse;
+import com.example.demo.dto.auth.RefreshTokenRequest;
+import com.example.demo.dto.auth.RegisterRequest;
 import com.example.demo.service.RefreshTokenService;
 import com.example.demo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

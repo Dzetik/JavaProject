@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.GameSessionResponse;
-import com.example.demo.dto.GameStateResponse;
+import com.example.demo.dto.game.GameSessionResponse;
+import com.example.demo.dto.game.GameStateResponse;
 import com.example.demo.entity.GameSessionStatus;
 import com.example.demo.service.GameSessionService;
 import com.example.demo.service.GameStateService;

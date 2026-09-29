@@ -1,6 +1,6 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.GameStateResponse;
+import com.example.demo.dto.game.GameStateResponse;
 import com.example.demo.entity.GameSession;
 import com.example.demo.entity.GameSessionStatus;
 import com.example.demo.entity.GameState;

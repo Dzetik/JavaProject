@@ -1,7 +1,8 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.CreateLobbyRequest;
-import com.example.demo.dto.LobbyResponse;
+import com.example.demo.dto.lobby.CreateLobbyRequest;
+import com.example.demo.dto.lobby.LobbyResponse;
+import com.example.demo.dto.lobby.UpdateLobbySettingsRequest;
 import com.example.demo.service.LobbyService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -135,6 +136,52 @@ public class LobbyController {
             Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(lobbyService.leaveLobby(id, userId));
+    }
+
+    @Operation(
+            summary = "Изменить настройки лобби",
+            description = "Изменяет количество начальных карт на столе и в руке игрока. Доступно только владельцу лобби до запуска игры"
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Настройки успешно обновлены",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    implementation = LobbyResponse.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Некорректные значения настроек"
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Требуется авторизация"
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "Пользователь не является владельцем лобби"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Лобби не найдено"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Игра уже запущена"
+            )
+    })
+    @PatchMapping("/{id}/settings")
+    public ResponseEntity<LobbyResponse> updateLobbySettings(
+            @Parameter(description = "ID лобби", example = "1")
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateLobbySettingsRequest request,
+            Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(lobbyService.updateLobbySettings(id, request, userId));
     }
 
     @Operation(

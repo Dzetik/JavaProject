@@ -1,13 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.GameSessionPlayerResponse;
-import com.example.demo.dto.GameSessionResponse;
+import com.example.demo.dto.game.GameSessionPlayerResponse;
+import com.example.demo.dto.game.GameSessionResponse;
 import com.example.demo.entity.GameSession;
 import com.example.demo.entity.GameSessionStatus;
 import com.example.demo.event.GameUpdatedEvent;
 import com.example.demo.exception.ConflictException;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.repository.GameSessionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;

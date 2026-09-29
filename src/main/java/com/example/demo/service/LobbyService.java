@@ -1,9 +1,10 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.CreateLobbyRequest;
-import com.example.demo.dto.GameSessionResponse;
-import com.example.demo.dto.LobbyPlayerResponse;
-import com.example.demo.dto.LobbyResponse;
+import com.example.demo.dto.lobby.CreateLobbyRequest;
+import com.example.demo.dto.game.GameSessionResponse;
+import com.example.demo.dto.lobby.LobbyPlayerResponse;
+import com.example.demo.dto.lobby.LobbyResponse;
+import com.example.demo.dto.lobby.UpdateLobbySettingsRequest;
 import com.example.demo.entity.*;
 import com.example.demo.event.GameUpdatedEvent;
 import com.example.demo.event.LobbyUpdatedEvent;
@@ -167,6 +168,43 @@ public class LobbyService {
     }
 
     @Transactional
+    public LobbyResponse updateLobbySettings(Long lobbyId, UpdateLobbySettingsRequest request, Long userId) {
+        Lobby lobby = lobbyRepository.findByIdForUpdate(lobbyId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Лобби с id " + lobbyId + " не найдено"));
+
+        if (!lobby.getOwner().getId().equals(userId)) {
+            throw new ForbiddenException("Только владелец лобби может изменять настройки");
+        }
+
+        if (lobby.getStatus() != LobbyStatus.WAITING) {
+            throw new ConflictException("Нельзя изменять настройки после запуска игры");
+        }
+
+        if (request.getInitialTableCards() == null || request.getInitialTableCards() < 3
+                || request.getInitialTableCards() > 10 || request.getInitialHandCards() == null
+                || request.getInitialHandCards() < 3 || request.getInitialHandCards() > 10) {
+            throw new IllegalArgumentException("Количество карт должно быть от 3 до 10");
+        }
+
+        lobby.setInitialTableCards(request.getInitialTableCards());
+        lobby.setInitialHandCards(request.getInitialHandCards());
+
+        Lobby savedLobby = lobbyRepository.save(lobby);
+        LobbyResponse response = toLobbyResponse(savedLobby);
+
+        eventPublisher.publishEvent(
+                new LobbyUpdatedEvent(
+                        "LOBBY_UPDATED",
+                        savedLobby.getId(),
+                        response
+                )
+        );
+
+        return response;
+    }
+
+    @Transactional
     public LobbyResponse startGame(Long lobbyId, Long userId) {
         Lobby lobby = lobbyRepository.findByIdForUpdate(lobbyId)
                 .orElseThrow(() ->
@@ -241,6 +279,8 @@ public class LobbyService {
                 lobby.getOwner().getId(),
                 players,
                 lobby.getMaxPlayers(),
+                lobby.getInitialTableCards(),
+                lobby.getInitialHandCards(),
                 lobby.getStatus()
         );
     }
