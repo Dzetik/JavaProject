@@ -9,15 +9,23 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Ingredient {
+public class RecipeIngredientRequirement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String name;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "recipe_id")
+    private Recipe recipe;
+
+    @ManyToOne
+    @JoinColumn(name = "ingredient_id")
+    private Ingredient ingredient;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "ingredient_type")
     private IngredientType type;
+
+    @Column(nullable = false)
+    private int quantity;
 }

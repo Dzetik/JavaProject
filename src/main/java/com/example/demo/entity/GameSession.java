@@ -23,6 +23,14 @@ public class GameSession {
     @JoinColumn(name = "lobby_id", nullable = false, unique = true)
     private Lobby lobby;
 
+    @OneToOne(
+            mappedBy = "gameSession",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Deck deck;
+
     @ManyToMany
     @JoinTable(
             name = "game_session_players",

@@ -8,25 +8,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "decks")
 @Getter
 @Setter
 @NoArgsConstructor
-public class Recipe {
+public class Deck {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "result_ingredient_id")
-    private Ingredient result;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "game_session_id",
+            nullable = false,
+            unique = true
+    )
+    private GameSession gameSession;
 
     @OneToMany(
-            mappedBy = "recipe",
+            mappedBy = "deck",
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<RecipeIngredientRequirement> ingredients = new ArrayList<>();
-
-    @Column(nullable = false)
-    private int score;
+    private List<Card> cards = new ArrayList<>();
 }

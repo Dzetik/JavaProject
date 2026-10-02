@@ -28,7 +28,11 @@ public class Card {
     )
     private Set<Ingredient> ingridients = new HashSet<>();
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "game_session_id")
-    private GameSession gameSession;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "deck_id", nullable = false)
+    private Deck deck;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private CardLocation location;
 }

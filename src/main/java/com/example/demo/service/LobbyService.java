@@ -30,6 +30,7 @@ public class LobbyService {
     private final GameSessionRepository gameSessionRepository;
     private final GameSessionService gameSessionService;
     private final GameStateService gameStateService;
+    private final DeckService deckService;
 
     @Transactional
     public LobbyResponse createLobby(CreateLobbyRequest request, Long userId) {
@@ -231,6 +232,7 @@ public class LobbyService {
         GameSession savedGameSession = gameSessionRepository.save(gameSession);
 
         gameStateService.createInitialState(savedGameSession);
+        deckService.createDeck(savedGameSession);
 
         lobby.setStatus(LobbyStatus.STARTED);
         Lobby savedLobby = lobbyRepository.save(lobby);
