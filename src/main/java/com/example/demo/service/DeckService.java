@@ -11,12 +11,17 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DeckService {
     private final DeckRepository deckRepository;
+    private final DeckCompositionService deckCompositionService;
 
     @Transactional
     public Deck createDeck(GameSession gameSession) {
         Deck deck = new Deck();
         deck.setGameSession(gameSession);
 
-        return deckRepository.save(deck);
+        Deck savedDeck = deckRepository.save(deck);
+
+        deckCompositionService.populateDeck(savedDeck);
+
+        return savedDeck;
     }
 }
