@@ -32,6 +32,10 @@ public class Card {
     @JoinColumn(name = "deck_id", nullable = false)
     private Deck deck;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CardLocation location;

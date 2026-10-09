@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.game.CardDrawResponse;
 import com.example.demo.dto.game.GameSessionResponse;
 import com.example.demo.dto.game.GameStateResponse;
 import com.example.demo.entity.GameSessionStatus;
+import com.example.demo.service.CardDrawService;
 import com.example.demo.service.GameSessionService;
 import com.example.demo.service.GameStateService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class GameSessionController {
     private final GameSessionService gameSessionService;
     private final GameStateService gameStateService;
+    private final CardDrawService cardDrawService;
 
     @GetMapping("/{id}")
     @Operation(
@@ -124,4 +127,26 @@ public class GameSessionController {
         Long userId = (Long) authentication.getPrincipal();
         return ResponseEntity.ok(gameSessionService.finishGame(id, userId));
     }
+
+    @PostMapping("/{id}/cards/draw")
+    @Operation(
+            summary = "Получить карту из колоды",
+            description = "Выдаёт авторизованному игроку случайную карту из колоды его игровой сессии"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Карта успешно выдана"),
+            @ApiResponse(responseCode = "401", description = "Требуется авторизация"),
+            @ApiResponse(responseCode = "403", description = "Пользователь не является участником игры"),
+            @ApiResponse(responseCode = "404", description = "Игра или колода не найдены"),
+            @ApiResponse(responseCode = "409", description = "В колоде не осталось карт")
+    })
+    public ResponseEntity<CardDrawResponse> drawCard(
+            @Parameter(description = "ID игровой сессии", example = "1")
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        Long userId = (Long) authentication.getPrincipal();
+        return ResponseEntity.ok(cardDrawService.drawCard(id, userId));
+    }
+
 }
